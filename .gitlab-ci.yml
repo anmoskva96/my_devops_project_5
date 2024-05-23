@@ -1,0 +1,48 @@
+stages:
+        - build
+        - style
+        - test
+        - deploy
+
+lemuelge_build:
+        stage: build
+        script:
+                - make -C src/cat all
+                - make -C src/grep all
+        artifacts:
+                paths:
+                        - src/cat/s21_cat
+                        - src/grep/s21_grep
+                expire_in: 30 days
+        after_script:
+                - sh src/part6.sh
+
+lemuelge_style:
+        stage: style
+        script:
+                - cd src
+                - clang-format -n --Werror cat/s21_cat.*
+                - clang-format -n --Werror grep/s21_grep.*
+        allow_failure: false
+        after_script:
+                - sh src/part6.sh
+
+lemuelge_test:
+        stage: test
+        script:
+                - chmod +x src/cat/test_func_cat.sh
+                - ./src/cat/test_func_cat.sh
+                - chmod +x src/grep/test_func_grep.sh
+                - ./src/grep/test_func_grep.sh
+        when: on_success
+        after_script:
+                - sh src/part6.sh
+
+lemuelge_deploy:
+        stage: deploy
+        script:
+                - chmod +x src/deploy.sh
+                - ./src/deploy.sh
+        when: manual
+        after_script:
+                - sh src/part6.sh
